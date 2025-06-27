@@ -11,7 +11,32 @@ def green(text):
 def yellow(text):
     return text.replace(text, f"\033[93m{text}\033[0m")
 
+def convert_txt_to_csv(txt_file):
+    """تبدیل فایل txt به csv"""
+    csv_file = txt_file.replace('.txt', '.csv')
+    try:
+        with open(txt_file, 'r') as txt, open(csv_file, 'w') as csv:
+            csv.write("Task,Priority\n")  # نوشتن هدر
+            for line in txt:
+                line = line.strip()
+                if line:  # اگر خط خالی نبود
+                    # فرض می‌کنیم فرمت: task,priority
+                    csv.write(f"{line}\n")
+        return csv_file
+    except Exception as e:
+        print(red(f"Error converting file: {e}"))
+        return None
+
+
+
+
 file_name=input("\nEnter the name of your file to sort : ")
+
+if file_name.endswith('.txt'):
+    file_name = convert_txt_to_csv(file_name)
+    if not file_name:
+        exit()
+
 
 try:
     data = pd.read_csv(file_name)
