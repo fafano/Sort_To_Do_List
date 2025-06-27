@@ -1,18 +1,19 @@
+from tabulate import tabulate
 import pandas as pd
+from datetime import datetime
 import os
 
-# فعال کردن پشتیبانی از رنگ در ترمینال ویندوز
 os.system('')
 
-def red(text): 
-    return text.replace(text, f"\033[91m{text}\033[0m") 
-def green(text):
-    return text.replace(text, f"\033[92m{text}\033[0m")
-def yellow(text):
-    return text.replace(text, f"\033[93m{text}\033[0m")
+def colorize(text, color_code):
+    return f"\033[{color_code}m{text}\033[0m"
+
+def red(text): return colorize(text, 91)
+def green(text): return colorize(text, 92)
+def yellow(text): return colorize(text, 93)
+def blue(text): return colorize(text, 94)
 
 def convert_txt_to_csv(txt_file):
-    """تبدیل فایل txt به csv"""
     csv_file = txt_file.replace('.txt', '.csv')
     try:
         with open(txt_file, 'r') as txt, open(csv_file, 'w') as csv:
@@ -26,11 +27,7 @@ def convert_txt_to_csv(txt_file):
     except Exception as e:
         print(red(f"Error converting file: {e}"))
         return None
-
-
-
-
-file_name=input("\nEnter the name of your file to sort : ")
+file_name = input("\nEnter the name of your file to sort: ")
 
 if file_name.endswith('.txt'):
     file_name = convert_txt_to_csv(file_name)
@@ -38,29 +35,47 @@ if file_name.endswith('.txt'):
         exit()
 
 
+def sort_to_do_list(data):
+    tasks = []
+    for _, row in data.iterrows():
+        task = row['Task']
+        priority = row['Priority']
+        if priority == "High":
+            task = red(task)
+            priority = red(priority)
+            tasks.append([task, priority])
+    for _, row in data.iterrows():
+        task = row['Task']
+        priority = row['Priority']
+        if priority == "Medium":
+            task = green(task)
+            priority = green(priority)
+            tasks.append([task, priority])
+    for _, row in data.iterrows():
+        task = row['Task']
+        priority = row['Priority']
+        if priority == "Low":
+            task = yellow(task)
+            priority = yellow(priority)
+            tasks.append([task, priority])
+    
+    headers = [blue("Task"), blue("Priority")]
+    print(tabulate(tasks, headers=headers, tablefmt="grid"))
+
+
 try:
     data = pd.read_csv(file_name)
-    print("File loaded successfully!")
+    print(green("File loaded successfully!"))
 except FileNotFoundError:
-    print("Error: 'data.csv' not found!")
+    print(red("Error: File not found!"))
     exit()
+def show_stats(data):
+    counts = data['Priority'].value_counts()
+    print(f"\n{blue('Task Statistics:')}")
+    print(f"High: {red(str(counts.get('High', 0)))}")
+    print(f"Medium: {green(str(counts.get('Medium', 0)))}")
+    print(f"Low: {yellow(str(counts.get('Low', 0)))}")
 
-def sort_to_do_list():
-    print(f"{'Task':<25} | {'Priority':<10}")
-    print("-" * 60)
-    for _, row in data.iterrows():
-        if row['Priority']=="High":
-             hight = red(f"{row['Task']:<25} | {row['Priority']:<10}")
-             print(hight)
-    for _, row in data.iterrows():
-        if row['Priority']=="Medium":
-             Medium = green(f"{row['Task']:<25} | {row['Priority']:<10}")
-             print(Medium)
-    for _, row in data.iterrows():
-        if row['Priority']=="Low":
-             Low = yellow(f"{row['Task']:<25} | {row['Priority']:<10}")
-             print(Low)
-
-
-
-sort_to_do_list()
+sort_to_do_list(data)
+show_stats(data)
+print(f"\nLast updated: {blue(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))}")
